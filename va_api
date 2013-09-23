@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import urllib2, json
-
+import urllib2, json, optparse
+	
 def vamApiSearch(query):
     """Queries the V&A object database for key material
     
@@ -16,8 +16,6 @@ def vamApiSearch(query):
         print 'network error'
         exit
         
-
-
 def outputTable(jason):
     """Takes JSON from V&A API and returns a lovely table
     
@@ -42,19 +40,20 @@ def outputTable(jason):
         print '</tr>';\
         
     print '</table>';\
-    
 
 
-def getData(searchTerm = 'silver'):
-    """Accepts a search term
-    
-    returns html table"""
-    
-    search = vamApiSearch(searchTerm)
-    
-    outputTable(search);
-    
-    
+def getData():
+	"""Accepts a search term
+	
+	returns html table"""
+	
+	p = optparse.OptionParser()
+	p.add_option('--material', '-m', default="silver")
+	options, arguments = p.parse_args()
+	
+	search = vamApiSearch(options.material)
+	
+	outputTable(search)
+
 if __name__ == '__main__':
-    getData()
-    
+	getData()
