@@ -17,29 +17,33 @@ def vamApiSearch(query):
         exit
         
 def outputTable(jason):
-    """Takes JSON from V&A API and returns a lovely table
-    
-    Output string"""
-
-    json_object = json.loads(jason)
-    
-    print '<table>';\
-    print '<thead><tr><th>Name</th><th>Location</th></tr></thead>';\
-    
-    for item in json_object['records']: 
-        
-        print '<tr>';\
-        
-        if item['fields']['title']:
-            print '<td>' + item['fields']['title'] + ' - ' + item['fields']['object'] + '</td>';\
-            
-        else:
-            print '<td>' + item['fields']['object'] + '</td>';\
-        
-        print '<td>' + item['fields']['location'] + '</td>';\
-        print '</tr>';\
-        
-    print '</table>';\
+	"""Takes JSON from V&A API and returns a lovely table
+	
+	Output string"""
+	
+	json_object = json.loads(jason)
+	
+	print '<table>';\
+	print '<thead><tr><th>Name</th><th>Location</th></tr></thead>';\
+	
+	if json_object['meta']['result_count'] == 0:
+		print '<tr><td colspan="2">No results to display</td></tr>';
+		
+	else:
+		for item in json_object['records']: 
+			
+			print '<tr>';\
+			
+			if item['fields']['title']:
+				print '<td>' + item['fields']['title'] + ' - ' + item['fields']['object'] + '</td>';\
+				
+			else:
+				print '<td>' + item['fields']['object'] + '</td>';\
+			
+			print '<td>' + item['fields']['location'] + '</td>';\
+			print '</tr>';\
+		
+	print '</table>';\
 
 
 def getData():
