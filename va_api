@@ -41,6 +41,8 @@ def request_handler():
 	# Get a table
 	exp.html = exp.write_vam_table()
 	
+	exp.html = exp.html.encode('utf-8')
+	
 	# Export
 	if options.output == 'file' :
 		exp.save_new_file()
