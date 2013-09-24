@@ -1,20 +1,35 @@
 #!/usr/bin/env python
 
-import urllib2, json, optparse
+import json, optparse, sys, urllib2
 	
 def vamApiSearch(query):
     """Queries the V&A object database for key material
     
     returns result as string"""
     
-    base_url = 'http://www.vam.ac.uk/api/json/museumobject/search?materialsearch='+query+'&limit=10';
+    base_url = 'http://www.vam.ac.uk/api/json/museumobject/search?limit=10';
+    
+    if query.material:
+    	base_url = base_url + '&materialsearch=' + query.material
+    	
+    if query.name:
+    	base_url = base_url + '&objectnamesearch=' + query.name
+    	
+    if query.place:
+    	base_url = base_url + '&placesearch=' + query.place
+    
+    if query.before and query.before.isdigit():
+    	base_url = base_url + '&before=' + str(query.before)
+    	
+    if query.after and query.after.isdigit():
+    	base_url = base_url + '&after=' + str(query.after)
     
     try:
         response = urllib2.urlopen(base_url, timeout = 1)
         return response.read()
     except urllib2.URLError, e:
         print 'network error'
-        exit
+        sys.exit()
         
 def outputTable(jason):
 	"""Takes JSON from V&A API and returns a lovely table
@@ -24,10 +39,10 @@ def outputTable(jason):
 	json_object = json.loads(jason)
 	
 	print '<table>';\
-	print '<thead><tr><th>Name</th><th>Location</th></tr></thead>';\
+	print '<thead><tr><th>Name</th><th>Location</th><th>Year</th></tr></thead>';\
 	
 	if json_object['meta']['result_count'] == 0:
-		print '<tr><td colspan="2">No results to display</td></tr>';
+		print '<tr><td colspan="4">No results to display</td></tr>';
 		
 	else:
 		for item in json_object['records']: 
@@ -41,6 +56,8 @@ def outputTable(jason):
 				print '<td>' + item['fields']['object'] + '</td>';\
 			
 			print '<td>' + item['fields']['location'] + '</td>';\
+			print '<td>' + item['fields']['place'] + '</td>';\
+			print '<td>' + str(item['fields']['year_start']) + '</td>';\
 			print '</tr>';\
 		
 	print '</table>';\
@@ -52,10 +69,14 @@ def getData():
 	returns html table"""
 	
 	p = optparse.OptionParser()
-	p.add_option('--material', '-m', default="silver")
+	p.add_option('--material', '-m')
+	p.add_option('--name', '-n')
+	p.add_option('--before', '-b')
+	p.add_option('--after', '-a')
+	p.add_option('--place', '-p')
 	options, arguments = p.parse_args()
 	
-	search = vamApiSearch(options.material)
+	search = vamApiSearch(options)
 	
 	outputTable(search)
 
