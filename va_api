@@ -1,42 +1,46 @@
 #!/usr/bin/env python
 
-import json, optparse, sys, urllib2
+import optparse, requests, sys
 	
 def vamApiSearch(query):
     """Queries the V&A object database for key material
     
     returns result as string"""
     
-    base_url = 'http://www.vam.ac.uk/api/json/museumobject/search?limit=10';
+    base_url = 'http://www.vam.ac.uk/api/json/museumobject/search';
+    
+    queryString = {'limit':'10'}
     
     if query.material:
-    	base_url = base_url + '&materialsearch=' + query.material
+    	queryString['materialsearch'] = query.material
     	
     if query.name:
-    	base_url = base_url + '&objectnamesearch=' + query.name
+    	queryString['objectnamesearch'] = query.name
     	
     if query.place:
-    	base_url = base_url + '&placesearch=' + query.place
+    	queryString['placesearch'] = query.place
     
     if query.before and query.before.isdigit():
-    	base_url = base_url + '&before=' + str(query.before)
+    	queryString['before'] = query.before
     	
     if query.after and query.after.isdigit():
-    	base_url = base_url + '&after=' + str(query.after)
+    	queryString['after'] = query.after
     
+    '''
     try:
         response = urllib2.urlopen(base_url, timeout = 1)
         return response.read()
     except urllib2.URLError, e:
         print 'network error'
         sys.exit()
+    '''
+    r = requests.get(base_url, params=queryString)
+    return r.json()
         
-def outputTable(jason):
+def outputTable(json_object):
 	"""Takes JSON from V&A API and returns a lovely table
 	
 	Output string"""
-	
-	json_object = json.loads(jason)
 	
 	print '<table>';\
 	print '<thead><tr><th>Name</th><th>Location</th><th>Year</th></tr></thead>';\
