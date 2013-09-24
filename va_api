@@ -2,39 +2,39 @@
 
 import optparse, requests, sys
 	
-def vamApiSearch(query):
+def vam_api_search(query):
 	"""Queries the V&A object database for key material
 	
 	returns result as string"""
 	
 	base_url = 'http://www.vam.ac.uk/api/json/museumobject/search';
 	
-	queryString = {'limit':'10'}
+	query_string = {'limit':'10'}
 	
 	if query.material:
-		queryString['materialsearch'] = query.material
+		query_string['materialsearch'] = query.material
 		
 	if query.name:
-		queryString['objectnamesearch'] = query.name
+		query_string['objectnamesearch'] = query.name
 		
 	if query.place:
-		queryString['placesearch'] = query.place
+		query_string['placesearch'] = query.place
 	
 	if query.before and query.before.isdigit():
-		queryString['before'] = query.before
+		query_string['before'] = query.before
 		
 	if query.after and query.after.isdigit():
-		queryString['after'] = query.after
+		query_string['after'] = query.after
 	
 	try:
-		r = requests.get(base_url, params=queryString)
+		r = requests.get(base_url, params=query_string)
 		return r.json()
 	except requests.exceptions.RequestException.e:
 		print 'Error connecting to V&A API';
 		sys.exit()
     
     
-def outputTable(json_object, outputType):
+def output_table(json_object, output_type):
 	"""Takes JSON from V&A API and returns a lovely table
 	
 	Output string"""
@@ -77,7 +77,7 @@ def outputTable(json_object, outputType):
 		</table>
 		"""
 		
-	if outputType == 'file' :
+	if output_type == 'file' :
 		
 		filename = raw_input("Give name for the file: ")
 		
@@ -95,7 +95,7 @@ def outputTable(json_object, outputType):
 
 
 
-def getData():
+def get_data():
 	"""Accepts a search term
 	
 	returns html table"""
@@ -109,11 +109,11 @@ def getData():
 	p.add_option('--output', '-o', default='screen', help="Accepts either 'screen' to output to console or 'file' to save a file")
 	options, arguments = p.parse_args()
 	
-	search = vamApiSearch(options)
+	search = vam_api_search(options)
 	
-	outputTable(search, options.output)
+	output_table(search, options.output)
 	
 	
 
 if __name__ == '__main__':
-	getData()
+	get_data()
