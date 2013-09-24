@@ -3,68 +3,96 @@
 import optparse, requests, sys
 	
 def vamApiSearch(query):
-    """Queries the V&A object database for key material
+	"""Queries the V&A object database for key material
+	
+	returns result as string"""
+	
+	base_url = 'http://www.vam.ac.uk/api/json/museumobject/search';
+	
+	queryString = {'limit':'10'}
+	
+	if query.material:
+		queryString['materialsearch'] = query.material
+		
+	if query.name:
+		queryString['objectnamesearch'] = query.name
+		
+	if query.place:
+		queryString['placesearch'] = query.place
+	
+	if query.before and query.before.isdigit():
+		queryString['before'] = query.before
+		
+	if query.after and query.after.isdigit():
+		queryString['after'] = query.after
+	
+	try:
+		r = requests.get(base_url, params=queryString)
+		return r.json()
+	except requests.exceptions.RequestException.e:
+		print 'Error connecting to V&A API';
+		sys.exit()
     
-    returns result as string"""
     
-    base_url = 'http://www.vam.ac.uk/api/json/museumobject/search';
-    
-    queryString = {'limit':'10'}
-    
-    if query.material:
-    	queryString['materialsearch'] = query.material
-    	
-    if query.name:
-    	queryString['objectnamesearch'] = query.name
-    	
-    if query.place:
-    	queryString['placesearch'] = query.place
-    
-    if query.before and query.before.isdigit():
-    	queryString['before'] = query.before
-    	
-    if query.after and query.after.isdigit():
-    	queryString['after'] = query.after
-    
-    '''
-    try:
-        response = urllib2.urlopen(base_url, timeout = 1)
-        return response.read()
-    except urllib2.URLError, e:
-        print 'network error'
-        sys.exit()
-    '''
-    r = requests.get(base_url, params=queryString)
-    return r.json()
-        
-def outputTable(json_object):
+def outputTable(json_object, outputType):
 	"""Takes JSON from V&A API and returns a lovely table
 	
 	Output string"""
 	
-	print '<table>';\
-	print '<thead><tr><th>Name</th><th>Location</th><th>Year</th></tr></thead>';\
+	output = """
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Room</th>
+					<th>Original Location</th>
+					<th>Year</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+		"""
 	
 	if json_object['meta']['result_count'] == 0:
-		print '<tr><td colspan="4">No results to display</td></tr>';
+		output+='<tr><td colspan="4">No results to display</td></tr>'
 		
 	else:
 		for item in json_object['records']: 
 			
-			print '<tr>';\
+			output+='<tr>'
 			
 			if item['fields']['title']:
-				print '<td>' + item['fields']['title'] + ' - ' + item['fields']['object'] + '</td>';\
+				output+='<td>' + item['fields']['title'] + ' - ' + item['fields']['object'] + '</td>'
 				
 			else:
-				print '<td>' + item['fields']['object'] + '</td>';\
+				output+='<td>' + item['fields']['object'] + '</td>'
 			
-			print '<td>' + item['fields']['location'] + '</td>';\
-			print '<td>' + item['fields']['place'] + '</td>';\
-			print '<td>' + str(item['fields']['year_start']) + '</td>';\
-			print '</tr>';\
+			output+='<td>' + item['fields']['location'] + '</td>'
+			output+='<td>' + item['fields']['place'] + '</td>'
+			output+='<td>' + str(item['fields']['year_start']) + '</td>'
+			output+='</tr>' + "\n"
 		
-	print '</table>';\
+	output+= """
+			</tbody>
+		</table>
+		"""
+		
+	if outputType == 'file' :
+		
+		filename = raw_input("Give name for the file: ")
+		
+		if filename[-4:] != '.htm':
+			filename+='.htm'
+		
+		with open(filename, "wt") as out:
+			for line in open("template.txt"):
+				out.write(line.replace('{content}', output))
+		
+		print 'File has been created'
+	
+	else :
+		print output
+
 
 
 def getData():
@@ -78,11 +106,14 @@ def getData():
 	p.add_option('--before', '-b')
 	p.add_option('--after', '-a')
 	p.add_option('--place', '-p')
+	p.add_option('--output', '-o', default='screen', help="Accepts either 'screen' to output to console or 'file' to save a file")
 	options, arguments = p.parse_args()
 	
 	search = vamApiSearch(options)
 	
-	outputTable(search)
+	outputTable(search, options.output)
+	
+	
 
 if __name__ == '__main__':
 	getData()

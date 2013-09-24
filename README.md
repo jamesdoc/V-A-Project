@@ -8,3 +8,7 @@ Calls to the API with the following parameters:
 - Place (-p)
 - Before date (-b)
 - After date (-a)
+- Output (-o)
+
+## Output
+Output accepts either 'screen' or 'file'. Screen simply responds by outputting the HTML table to the console window. File follows up by asking for a file name. A new HTML file is then created.
